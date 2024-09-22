@@ -11,8 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { PenTool, Eraser, Square, Circle, RotateCcw, Download, ChevronLeft, ChevronRight, RotateCw, Save, Upload } from 'lucide-react'
 
-const allCharacters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?ÆØÅæøå'
-
+const allCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ0123456789abcdefghijklmnopqrstuvwxyzæøå!@#$%^&*()_+-=[]{}|;:,.<>?ÆØÅæøå"
 type Point = { x: number; y: number; pressure: number }
 type Stroke = { points: Point[]; width: number; texture: string; bristleAmount: number }
 type Glyph = { strokes: Stroke[]; width: number; alternates?: Glyph[]; metrics: GlyphMetrics }
@@ -181,7 +180,7 @@ export default function FontCreator() {
           e.preventDefault()
           prevChar()
           break
-        case '1':
+            case '1':
         case '2':
         case '3':
         case '4':
@@ -709,6 +708,9 @@ const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const nextIndex = (currentIndex + 1) % allCharacters.length
     setSelectedChar(allCharacters[nextIndex])
     setCurrentAlternateIndex(0)
+    if (nextIndex % 10 === 0) {
+      setStartIndex(nextIndex)
+    }
   }
 
   const prevChar = () => {
@@ -716,8 +718,10 @@ const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const prevIndex = (currentIndex - 1 + allCharacters.length) % allCharacters.length
     setSelectedChar(allCharacters[prevIndex])
     setCurrentAlternateIndex(0)
+    if (prevIndex % 10 === 9) {
+      setStartIndex(Math.max(0, prevIndex - 9))
+    }
   }
-
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
@@ -896,27 +900,30 @@ const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
       </div>
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1">
-          <div className="mb-4 flex items-center justify-between" ref={charBarRef}>
-            <Button onClick={() => setStartIndex(Math.max(0, startIndex - 1))} disabled={startIndex === 0}>
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            {visibleChars.map((char, index) => (
-              <Button
-                key={index}
-                onClick={() => {
-                  setSelectedChar(char)
-                  setCurrentAlternateIndex(0)
-                }}
-                variant={selectedChar === char ? 'default' : 'outline'}
-                className="w-10 h-10"
-              >
-                {char}
-              </Button>
-            ))}
-            <Button onClick={() => setStartIndex(startIndex + 1)} disabled={startIndex + visibleChars.length >= allCharacters.length}>
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+        <div className="mb-4 flex items-center justify-between" ref={charBarRef}>
+  <Button onClick={() => setStartIndex(Math.max(0, startIndex - 10))} disabled={startIndex === 0}>
+    <ChevronLeft className="h-4 w-4" />
+  </Button>
+  {visibleChars.map((char, index) => (
+    <Button
+      key={index}
+      onClick={() => {
+        setSelectedChar(char)
+        setCurrentAlternateIndex(0)
+      }}
+      variant={selectedChar === char ? 'default' : 'outline'}
+      className="w-10 h-10"
+    >
+      {char}
+    </Button>
+  ))}
+  <Button 
+    onClick={() => setStartIndex(Math.min(allCharacters.length - 10, startIndex + 10))} 
+    disabled={startIndex + 10 >= allCharacters.length}
+  >
+    <ChevronRight className="h-4 w-4" />
+  </Button>
+</div>
           <ResizableBox
         width={canvasSize.width}
         height={canvasSize.height}
